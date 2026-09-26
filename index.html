@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Three.js WebXR Interactive Scene</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
+        #ar-btn { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; background: #2563eb; color: #fff; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <button id="ar-btn">Войти в AR</button>
+    <script>
+        let hitTestSource = null, localSpace = null, spawnedObject = null, colorIndex = 0;
+        const colors = [0x3b82f6, 0x10b981, 0xf59e0b, 0xef4444, 0x8b5cf6];
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.xr.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        scene.add(new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1));
+        const light = new THREE.DirectionalLight(0xffffff, 0.8);
+        light.position.set(0.5, 2, 0.5);
+        scene.add(light);
+
+        const reticle = new THREE.Mesh(
+            new THREE.RingGeometry(0.1, 0.13, 32).rotateX(-Math.PI / 2),
+            new THREE.MeshBasicMaterial({ color: 0x00ff00, side: THREE.DoubleSide })
+        );
+        reticle.matrixAutoUpdate = false;
+        reticle.visible = false;
+        scene.add(reticle);
+
+        const material = new THREE.MeshStandardMaterial({ color: colors[0], roughness: 0.2, metalness: 0.85 });
+        const controller = renderer.xr.getController(0);
+        controller.addEventListener('select', () => {
+            if (!spawnedObject && reticle.visible) {
+                spawnedObject = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.25, 32), material);
+                spawnedObject.position.setFromMatrixPosition(reticle.matrix);
+                spawnedObject.position.y += 0.125;
+                scene.add(spawnedObject);
+            } else if (spawnedObject) {
+                colorIndex = (colorIndex + 1) % colors.length;
+                material.color.setHex(colors[colorIndex]);
+            }
+        });
+        scene.add(controller);
+
+        document.getElementById('ar-btn').addEventListener('click', async () => {
+            const session = await navigator.xr.requestSession('immersive-ar', { requiredFeatures: ['hit-test'] });
+            renderer.xr.setReferenceSpaceType('local-floor');
+            await renderer.xr.setSession(session);
+            document.getElementById('ar-btn').style.display = 'none';
+            hitTestSource = await session.requestHitTestSource({ space: await session.requestReferenceSpace('viewer') });
+            localSpace = await session.requestReferenceSpace('local-floor');
+            session.addEventListener('end', () => { hitTestSource = null; document.getElementById('ar-btn').style.display = 'block'; });
+        });
+
+        renderer.setAnimationLoop((timestamp, frame) => {
+            if (frame && hitTestSource && localSpace) {
+                const hits = frame.getHitTestResults(hitTestSource);
+                reticle.visible = hits.length > 0;
+                if (hits.length > 0) reticle.matrix.fromArray(hits[0].getPose(localSpace).transform.matrix);
+            }
+            if (spawnedObject) spawnedObject.rotation.y += 0.02;
+            renderer.render(scene, camera);
+        });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
