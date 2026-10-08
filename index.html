@@ -19,7 +19,7 @@ canvas { display: block; }
         <button id="left" aria-label="Повернуть влево на 15 градусов">−15°</button>
         <button id="right" aria-label="Повернуть вправо на 15 градусов">+15°</button>
         <label>Цвет <input id="color" type="color" value="#3b82f6"></label>
-        <label>Модель <select id="model"><option value="box">Куб</option><option value="knot">Узел</option></select></label>
+        <label>Модель <select id="model"><option value="box">Куб</option><option value="pyramid">Пирамида</option></select></label>
     </div>
 </div>
 <script>
@@ -43,7 +43,7 @@ class Lighting {
 class Model {
     constructor(scene) {
         this.root = new THREE.Group();
-        this.material = new THREE.MeshStandardMaterial({ color: '#3b82f6', roughness: 0.25, metalness: 0.65 });
+        this.material = new THREE.MeshStandardMaterial({ color: '#3b82f6', roughness: 0.25, metalness: 0.65, flatShading: true });
         this.set('box');
         scene.add(this.root);
     }
@@ -52,7 +52,7 @@ class Model {
             this.root.remove(this.mesh);
             this.mesh.geometry.dispose();
         }
-        const geometry = kind === 'box' ? new THREE.BoxGeometry(0.24, 0.24, 0.24) : new THREE.TorusKnotGeometry(0.09, 0.025, 96, 16);
+        const geometry = kind === 'box' ? new THREE.BoxGeometry(0.24, 0.24, 0.24) : new THREE.ConeGeometry(0.17, 0.24, 4).rotateY(Math.PI / 4);
         geometry.computeBoundingBox();
         this.mesh = new THREE.Mesh(geometry, this.material);
         this.mesh.position.y = -geometry.boundingBox.min.y;
