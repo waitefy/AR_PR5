@@ -1,5 +1,6 @@
 .~lock.*
 *.tmp
+*.docx.bak
 .DS_Store
 Thumbs.db
 .vscode/
