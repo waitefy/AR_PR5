@@ -8,7 +8,7 @@
 body { margin: 0; }
 canvas { display: block; }
 #overlay { position: fixed; inset: 0; pointer-events: none; }
-#controls { position: absolute; bottom: 8px; left: 8px; right: 8px; pointer-events: auto; background: white; }
+#controls { position: absolute; bottom: 8px; left: 8px; right: 8px; pointer-events: auto; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
@@ -20,7 +20,6 @@ canvas { display: block; }
         <button id="right" aria-label="Повернуть вправо на 15 градусов">+15°</button>
         <label>Цвет <input id="color" type="color" value="#3b82f6"></label>
         <label>Модель <select id="model"><option value="box">Куб</option><option value="knot">Узел</option></select></label>
-        <p id="status" role="status">Просмотр модели. Для AR наведите камеру на поверхность и коснитесь зелёного кольца.</p>
     </div>
 </div>
 <script>
@@ -132,7 +131,7 @@ class ARApp {
         } catch (error) {
             if (this.session) await this.session.end().catch(() => {});
             this.preview();
-            element('status').textContent = 'Ошибка AR: ' + error.message;
+            console.error('Ошибка AR:', error);
         } finally {
             element('ar').disabled = false;
         }
@@ -155,7 +154,7 @@ class ARApp {
 }
 
 try { new ARApp(); }
-catch (error) { element('status').textContent = 'Ошибка сцены: ' + error.message; }
+catch (error) { console.error('Ошибка сцены:', error); }
 </script>
 </body>
 </html>
