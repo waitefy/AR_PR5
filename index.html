@@ -8,8 +8,8 @@
 body { margin: 0; }
 canvas { display: block; }
 #overlay { position: fixed; inset: 0; pointer-events: none; }
-#controls { position: absolute; bottom: 8px; left: 8px; right: 8px; background: #fff; pointer-events: auto; }
-#controls label { display: inline-block; }
+#controls { position: absolute; bottom: 8px; left: 8px; right: 8px; display: flex; align-items: center; gap: 4px; background: #fff; pointer-events: auto; }
+#controls select { min-width: 0; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
@@ -19,8 +19,8 @@ canvas { display: block; }
         <button id="ar" disabled>Войти в AR</button>
         <button id="left" aria-label="Повернуть влево на 15 градусов">−15°</button>
         <button id="right" aria-label="Повернуть вправо на 15 градусов">+15°</button>
-        <label>Цвет <input id="color" type="color" value="#3b82f6"></label>
-        <label>Модель <select id="model"><option value="box">Куб</option><option value="pyramid">Пирамида</option></select></label>
+        <input id="color" type="color" value="#3b82f6" aria-label="Цвет">
+        <select id="model" aria-label="Модель"><option value="box">Куб</option><option value="pyramid">Пирамида</option></select>
     </div>
 </div>
 <script>
